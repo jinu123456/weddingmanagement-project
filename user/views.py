@@ -63,18 +63,24 @@ def register_user(request):
 
 def login_user(request):
     if request.method == "POST":
-        email=request.POST.get('email')
-        password=request.POST.get('password')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
         
-        user= authenticate(request,email=email,password=password)
+        user = authenticate(request, email=email, password=password)
 
         if user is not None:
-            login(request,user)
-            return redirect('home')
+            # Check if the user is NOT a service provider
+            if not user.is_service_provider:  # Ensure your model has this field
+                login(request, user)
+                return redirect('home')
+            else:
+                messages.error(request, 'Service providers are not allowed to log in here.')
+                return redirect('user_login')
         else:
-            messages.error(request,'Invalid email or Password ')
+            messages.error(request, 'Invalid email or password')
             return redirect('user_login')
-    return render(request,'user_login.html')
+
+    return render(request, 'user_login.html')
         
 
 def logout_user(request):
